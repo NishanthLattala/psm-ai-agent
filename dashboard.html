@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSM Pro | Enterprise Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --primary: #0d9488;
+            /* Teal */
+            --primary-hover: #0f766e;
+            --primary-light: #f0fdfa;
+            --secondary: #64748b;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 32px 24px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .nav-links {
+            flex: 1;
+            padding: 0 12px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+        }
+
+        .nav-btn:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+        }
+
+        /* Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .top-nav {
+            background: var(--card-bg);
+            height: 72px;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .top-nav .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .top-nav .role-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            border: 1px solid #fee2e2;
+            background: #fff1f1;
+            color: #dc2626;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+        }
+
+        .page-container {
+            padding: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Cards & Tables */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+
+        .kpi-card .label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .kpi-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Analytics Specific */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                width: 70px;
+            }
+
+            .sidebar-header h1 {
+                display: none;
+            }
+
+            .nav-btn span {
+                display: none;
+            }
+        }
+
+        /* Standardized Buttons */
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+            border-color: var(--secondary);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Form Inputs */
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        input,
+        select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            outline: none;
+            transition: var(--transition);
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+        }
+
+        /* Custom Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--text-main);
+        }
+
+        .modal-footer {
+            margin-top: 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Floating Chat Button */
+        .chat-bubble {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4);
+            transition: var(--transition);
+            z-index: 1001;
+        }
+
+        .chat-bubble:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Chat Window */
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 380px;
+            height: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1001;
+            border: 1px solid var(--border);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chat-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .msg {
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .msg-ai {
+            background: white;
+            align-self: flex-start;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-bottom-left-radius: 2px;
+        }
+
+        .msg-user {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        /* --- Shopping Cart UI --- */
+        .cart-bubble {
+            position: fixed;
+            bottom: 85px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #0d9488;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+        }
+
+        .cart-bubble:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
+            transition: right 0.4s ease;
+            z-index: 2000;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-sidebar.open {
+            right: 0;
+        }
+
+        .cart-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #0d9488;
+            padding-bottom: 15px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #0d9488;
+        }
+
+        .cart-footer {
+            margin-top: auto;
+            border-top: 2px solid #e2e8f0;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div
+                style="background: var(--primary); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
+                P</div>
+            <h1>PSM Pro</h1>
+        </div>
+        <div class="nav-links">
+            <button id="nav-products" class="nav-btn active" onclick="showSection('products')">🚀 <span>Store
+                    Front</span></button>
+            <button id="nav-supplier" class="nav-btn" onclick="showSection('supplier')" style="display: none;">📦
+                <span>My Listings</span></button>
+            <button id="nav-catalog" class="nav-btn" onclick="showSection('catalog')" style="display: none;">🏪
+                <span>Catalog</span></button>
+            <button id="nav-orders" class="nav-btn" onclick="showSection('orders')">📜 <span>Orders</span></button>
+            <button id="nav-analytics" class="nav-btn" onclick="showSection('analytics')" style="display: none;">📈
+                <span>Analytics</span></button>
+            <button id="nav-audit" class="nav-btn" onclick="showSection('audit')" style="display: none;">🛡️ <span>Audit
+                    Logs</span></button>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <div id="pageTitle" style="font-weight: 600; font-size: 1.1rem; color: var(--text-muted);">Dashboard
+                Overview</div>
+            <div class="user-info">
+                <div id="userInfoDisplay" style="text-align: right;">
+                    <div id="u_name" style="font-weight: 600; font-size: 0.95rem;">Username</div>
+                    <div id="u_role" class="role-badge"
+                        style="background: var(--primary-light); color: var(--primary);">Role</div>
+                </div>
+                <button onclick="logout()" class="logout-btn">Log Out</button>
+            </div>
+        </header>
+
+        <!-- Actual Page Content -->
+        <main class="page-container">
+
+            <!-- 1. Store/Products Section -->
+            <div id="section-products" class="tab-content">
+                <div class="section-header">
+                    <h2>Store Inventory</h2>
+                    <div id="inventoryCount" style="font-size: 0.9rem; color: var(--text-muted);">Loading items...</div>
+                </div>
+                <div class="card">
+                    <div id="productList">Loading...</div>
+                </div>
+            </div>
+
+            <!-- 2. Supplier Section -->
+            <div id="section-supplier" class="tab-content" style="display: none;">
+                <div class="section-header">
+                    <h2>Supplier Management</h2>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">Post New Product Listing</h3>
+                    <form id="supplierListingForm" class="form-row">
+                        <input type="text" id="s_name" placeholder="Product Name" required style="flex: 2;">
+                        <select id="s_category" style="flex: 1;">
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Food">Food / Grocery</option>
+                            <option value="Books">Books</option>
+                            <option value="Home">Home & Garden</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input type="number" id="s_price" placeholder="Wholesale Price (₹)" step="0.01" required
+                            style="flex: 1;">
+                        <button type="submit" class="btn btn-primary">Publish Listing</button>
+                    </form>
+                </div>
+
+                <div class="card" id="supplierPendingCard" style="display: none;">
+                    <h3 style="margin-bottom: 20px; font-size: 1.1rem; color: #b45309;">⚠️ Pending Procurement Requests
+                    </h3>
+                    <div id="supplierPendingList">Loading...</div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">Your Active Listings</h3>
+                    <div id="supplierList">Loading...</div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">Orders Received (Procurements)</h3>
+                    <div id="supplierSalesList">Loading...</div>
+                </div>
+            </div>
+
+            <!-- 3. Admin Catalog Section -->
+            <div id="section-catalog" class="tab-content" style="display: none;">
+                <div class="section-header">
+                    <h2>Marketplace Catalog</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">Sourcing items from verified suppliers</p>
+                </div>
+
+                <div class="card" id="adminPendingCard"
+                    style="display: none; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                    <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--primary);">Sent Requests (Pending
+                        Approval)</h3>
+                    <div id="adminPendingList">Loading...</div>
+                </div>
+
+                <div class="card">
+                    <div id="catalogList">Loading...</div>
+                </div>
+            </div>
+
+            <!-- 4. Orders Section -->
+            <div id="section-orders" class="tab-content" style="display: none;">
+                <div class="section-header">
+                    <h2 id="ordersTitle">Your Order History</h2>
+                    <div id="adminExportBtns" style="display: none;">
+                        <button onclick="downloadReport('csv')" class="btn btn-primary">📊 Export CSV Report</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div id="ordersList">Loading...</div>
+                </div>
+            </div>
+
+            <!-- 5. Analytics Section -->
+            <div id="section-analytics" class="tab-content" style="display: none;">
+                <div class="section-header">
+                    <h2>System Analytics</h2>
+                </div>
+
+                <!-- Filters Card -->
+                <div class="card" style="padding: 16px;">
+                    <div class="form-row" style="margin-bottom: 0;">
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Start
+                                Date</label>
+                            <input type="date" id="filter_start">
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">End
+                                Date</label>
+                            <input type="date" id="filter_end">
+                        </div>
+                        <button onclick="refreshAnalytics()" class="btn btn-primary" style="align-self: flex-end;">Apply
+                            Filter</button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-left-color: #10b981;">
+                        <div class="label">Total Revenue</div>
+                        <div id="kpi-revenue" class="value">₹0</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: #3b82f6;">
+                        <div class="label">Total Orders</div>
+                        <div id="kpi-orders" class="value">0</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: #f59e0b;">
+                        <div class="label">Units Sold</div>
+                        <div id="kpi-items" class="value">0</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: #6366f1;">
+                        <div class="label">Avg Order Value</div>
+                        <div id="kpi-avg" class="value">₹0</div>
+                    </div>
+                </div>
+
+                <!-- Charts Container -->
+                <div class="charts-grid">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px; font-size: 1rem;">Revenue Trends</h3>
+                        <div style="height: 300px;"><canvas id="trendsChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px; font-size: 1rem;">Category Share</h3>
+                        <div style="height: 300px;"><canvas id="categoryChart"></canvas></div>
+                    </div>
+                    <div class="card" style="grid-column: span 2;">
+                        <h3 style="margin-bottom: 20px; font-size: 1rem;">Product Performance Revenue</h3>
+                        <div style="height: 300px;"><canvas id="productChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Audit Logs Section -->
+            <div id="section-audit" class="tab-content" style="display: none;">
+                <div class="section-header">
+                    <h2>Admin Audit Logs</h2>
+                </div>
+                <div class="card">
+                    <div id="auditList">Loading...</div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- UI Modal -->
+    <div id="uiModal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modalTitle" class="modal-header">Title</div>
+            <div id="modalBody"></div>
+            <div class="modal-footer">
+                <button type="button" id="modalCancelBtn" onclick="closeModal()" class="btn btn-outline">Cancel</button>
+                <button type="button" id="modalConfirmBtn" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('psm_user'));
+        const API_BASE = "http://127.0.0.1:8000";
+
+        // Initialize App
+        if (!user) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('u_name').innerText = user.username;
+            document.getElementById('u_role').innerText = user.role.toUpperCase();
+
+            if (user.role === 'admin') {
+                document.getElementById('nav-catalog').style.display = 'flex';
+                document.getElementById('nav-audit').style.display = 'flex';
+                document.getElementById('nav-analytics').style.display = 'flex';
+                document.getElementById('adminExportBtns').style.display = 'block';
+                document.getElementById('ordersTitle').innerText = "All System Sales";
+            } else if (user.role === 'supplier') {
+                document.getElementById('nav-supplier').style.display = 'flex';
+            }
+
+            loadProducts();
+            loadOrders();
+            loadPendingProcurements();
+            if (user.role === 'admin') loadAudit();
+        }
+
+        async function downloadReport(type) {
+            window.open(`${API_BASE}/reports/sales/${type}`, '_blank');
+        }
+
+        function showSection(name) {
+            document.querySelectorAll('.tab-content').forEach(s => s.style.display = 'none');
+            document.getElementById(`section-${name}`).style.display = 'block';
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`nav-${name}`).classList.add('active');
+
+            const labels = {
+                'products': 'Store Inventory',
+                'supplier': 'Supplier Management',
+                'catalog': 'Supply Chain Catalog',
+                'orders': 'Order History',
+                'analytics': 'Insights & Trends',
+                'audit': 'Administrative Logs'
+            };
+            document.getElementById('pageTitle').innerText = labels[name] || 'Dashboard';
+
+            if (name === 'analytics') loadAnalytics();
+            if (name === 'products') loadProducts();
+            if (name === 'supplier') { loadSupplierListings(); loadSupplierSales(); loadPendingProcurements(); }
+            if (name === 'catalog') { loadCatalog(); loadPendingProcurements(); }
+        }
+
+        async function loadProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/products/?only_store=true`);
+                const products = await res.json();
+                const container = document.getElementById('productList');
+                const countContainer = document.getElementById('inventoryCount');
+
+                countContainer.innerText = `${products.length} Items in Store`;
+
+                let html = '<table><thead><tr><th>Product Name</th><th>Category</th><th>Retail Price</th><th>Availability</th><th>Actions</th></tr></thead><tbody>';
+                products.forEach(p => {
+                    const statusClass = p.stock_quantity < 5 ? 'style="color: #ef4444; font-weight: 600;"' : '';
+                    html += `
+                        <tr id="row_${p.product_id}">
+                            <td style="font-weight: 500;">${p.product_name}</td>
+                            <td><span class="role-badge" style="background: #f1f5f9; color: #475569;">${p.category}</span></td>
+                            <td style="font-weight: 600;">₹${p.price.toFixed(2)}</td>
+                            <td ${statusClass}>${p.stock_quantity} units</td>
+                            <td>
+                                ${user.role === 'admin' ? `
+                                    <button type="button" onclick="updateStock(${p.product_id})" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;">Edit Stock</button>
+                                    <button type="button" onclick="updatePrice(${p.product_id}, ${p.price})" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; color: #0d9488;">Edit Price</button>
+                                    <button type="button" onclick="deleteProduct(${p.product_id})" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; color: #ef4444;">Delete</button>
+                                ` : (user.role === 'user' ? `
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="number" id="qty_${p.product_id}" value="1" min="1" max="${p.stock_quantity}" style="width: 55px; padding: 4px 8px;">
+                                        <button type="button" onclick="buyProduct(${p.product_id})" ${p.stock_quantity <= 0 ? 'disabled' : ''} class="btn btn-primary" style="padding: 4px 12px; font-size: 0.75rem;">Buy Now</button>
+                                    </div>
+                                ` : `<span style="color: var(--text-muted); font-size: 0.75rem;">Viewing Only</span>`)}
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (err) { container.innerHTML = "<div class='card'>Error connecting to server.</div>"; }
+        }
+
+        async function loadSupplierListings() {
+            try {
+                const res = await fetch(`${API_BASE}/products/?supplier_name=${user.username}`);
+                const data = await res.json();
+                const container = document.getElementById('supplierList');
+
+                let html = '<table><thead><tr><th>Product Name</th><th>Category</th><th>Your Price</th><th>Active Status</th><th>Action</th></tr></thead><tbody>';
+                data.forEach(p => {
+                    html += `<tr>
+                        <td style="font-weight: 500;">${p.product_name}</td>
+                        <td>${p.category}</td>
+                        <td style="font-weight: 600;">₹${p.price.toFixed(2)}</td>
+                        <td><span class="role-badge" style="background: #dcfce7; color: #166534;">Listed</span></td>
+                        <td>
+                            <button type="button" onclick="updatePrice(${p.product_id}, ${p.price}, true)" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem; color: #0d9488;">Edit Price</button>
+                            <button type="button" onclick="deleteProduct(${p.product_id}, true)" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem;">Recall</button>
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = data.length ? html : "<p style='padding: 20px; color: var(--text-muted);'>No products listed yet.</p>";
+            } catch (err) { container.innerHTML = "Error loading listings."; }
+        }
+
+        async function loadSupplierSales() {
+            try {
+                const res = await fetch(`${API_BASE}/sales/?supplier_name=${user.username}`);
+                const data = await res.json();
+                const container = document.getElementById('supplierSalesList');
+
+                if (data.length === 0) {
+                    container.innerHTML = "<p style='padding: 20px; color: var(--text-muted);'>No procurement orders received yet.</p>"; return;
+                }
+
+                let html = '<table><thead><tr><th>Product Ordered</th><th>Buyer (Admin)</th><th>Quantity</th><th>Paid via</th><th>Earnings</th></tr></thead><tbody>';
+                data.forEach(s => {
+                    html += `<tr>
+                        <td style="font-weight: 500;">${s.product_name}</td>
+                        <td>${s.username}</td>
+                        <td>${s.quantity}</td>
+                        <td><span class="role-badge" style="background: #fef3c7; color: #92400e;">${s.payment_method || 'N/A'}</span></td>
+                        <td style="font-weight: 700; color: #10b981;">₹${(s.total_price || 0).toFixed(2)}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (err) { container.innerHTML = "Error loading history."; }
+        }
+
+        async function loadCatalog() {
+            try {
+                const res = await fetch(`${API_BASE}/products/`);
+                const all = await res.json();
+                const listings = all.filter(p => p.supplier_username !== null);
+                const container = document.getElementById('catalogList');
+
+                let html = '<table><thead><tr><th>Supplier</th><th>Product / Category</th><th>Wholesale Price</th><th>Action</th></tr></thead><tbody>';
+                listings.forEach(p => {
+                    html += `<tr>
+                        <td><strong>${p.supplier_username}</strong></td>
+                        <td>${p.product_name} <span style="color: var(--text-muted); font-size: 0.75rem;">(${p.category})</span></td>
+                        <td style="font-weight: 600;">₹${p.price.toFixed(2)}</td>
+                        <td>
+                            <button type="button" onclick="procurePrompt(${p.product_id}, ${p.price})" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.75rem;">Procure for Store</button>
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = listings.length ? html : "<p style='padding: 20px; color: var(--text-muted);'>No supplier listings available.</p>";
+            } catch (err) { container.innerHTML = "Error loading catalog."; }
+        }
+
+        function openModal(title, bodyHtml, onConfirm, showCancel = true, confirmText = "Confirm") {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
+
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            confirmBtn.innerText = confirmText;
+
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            newBtn.onclick = () => { if (onConfirm) onConfirm(); closeModal(); };
+
+            document.getElementById('uiModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('uiModal').style.display = 'none';
+        }
+
+        async function procurePrompt(id, supPrice) {
+            const body = `
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="font-size: 0.850rem; color: var(--text-muted);">Wholesale Price: ₹${supPrice}/unit</p>
+                    <label style="font-size: 0.8rem; font-weight: 600;">Quantity Needed:</label>
+                    <input type="number" id="m_qty" value="50" min="1" style="width: 100%;">
+                    <label style="font-size: 0.8rem; font-weight: 600;">Set Retail Price (₹):</label>
+                    <input type="number" id="m_price" value="${(supPrice * 1.25).toFixed(2)}" step="0.01" style="width: 100%;">
+                </div>
+            `;
+
+            openModal("Procure for Store", body, async () => {
+                const qty = parseInt(document.getElementById('m_qty').value);
+                const price = parseFloat(document.getElementById('m_price').value);
+                if (!qty || !price) return;
+
+                const res = await fetch(`${API_BASE}/products/procurement/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'admin-name': user.username },
+                    body: JSON.stringify({ supplier_product_id: id, quantity: qty, store_price: price })
+                });
+
+                if (res.ok) {
+                    alert("Procurement request sent to supplier.");
+                    loadPendingProcurements();
+                } else alert("Request failed.");
+            });
+        }
+
+        async function loadPendingProcurements() {
+            try {
+                const res = await fetch(`${API_BASE}/products/procurement/pending`, {
+                    headers: { 'admin-name': user.username, 'user-role': user.role }
+                });
+                const data = await res.json();
+
+                if (user.role === 'supplier') {
+                    const container = document.getElementById('supplierPendingList');
+                    const card = document.getElementById('supplierPendingCard');
+                    if (data.length === 0) { card.style.display = 'none'; return; }
+
+                    card.style.display = 'block';
+                    let html = '<table><thead><tr><th>Product</th><th>Buyer</th><th>Qty</th><th>Wholesale</th><th>Actions</th></tr></thead><tbody>';
+                    data.forEach(p => {
+                        html += `<tr>
+                            <td>${p.product_name}</td>
+                            <td>${p.admin_name}</td>
+                            <td>${p.quantity}</td>
+                            <td style="font-weight: 600;">₹${p.store_price.toFixed(2)}</td>
+                            <td>
+                                <button onclick="acceptProcurement(${p.id})" class="btn btn-primary" style="padding: 4px 8px; font-size: 0.75rem;">Accept</button>
+                                <button onclick="rejectProcurement(${p.id})" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; color: #ef4444;">Reject</button>
+                            </td>
+                        </tr>`;
+                    });
+                    container.innerHTML = html + '</tbody></table>';
+                } else if (user.role === 'admin') {
+                    const container = document.getElementById('adminPendingList');
+                    const card = document.getElementById('adminPendingCard');
+                    if (data.length === 0) { card.style.display = 'none'; return; }
+
+                    card.style.display = 'block';
+                    let html = '<ul>';
+                    data.forEach(p => {
+                        html += `<li style="padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem;">
+                            ⌛ Waiting for approval: <strong>${p.quantity} units of ${p.product_name}</strong>
+                        </li>`;
+                    });
+                    container.innerHTML = html + '</ul>';
+                }
+            } catch (err) { console.error("Error loading pending", err); }
+        }
+
+        async function acceptProcurement(id) {
+            const body = `
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="font-size: 0.85rem;">Select how you provided the goods:</p>
+                    <select id="m_payment" style="width: 100%;">
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Card">Credit/Debit Card</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                </div>
+            `;
+
+            openModal("Accept Order", body, async () => {
+                const method = document.getElementById('m_payment').value;
+                const res = await fetch(`${API_BASE}/products/procurement/accept/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'admin-name': user.username },
+                    body: JSON.stringify({ payment_method: method })
+                });
+
+                if (res.ok) {
+                    alert("Order accepted and inventory updated!");
+                    loadPendingProcurements();
+                    loadSupplierSales();
+                } else alert("Error accepting order.");
+            });
+        }
+
+        async function rejectProcurement(id) {
+            if (!confirm("Reject this order request?")) return;
+            const res = await fetch(`${API_BASE}/products/procurement/reject/${id}`, {
+                method: 'POST',
+                headers: { 'admin-name': user.username }
+            });
+            if (res.ok) loadPendingProcurements();
+        }
+
+        async function loadOrders() {
+            try {
+                let url = `${API_BASE}/sales/`;
+                if (user.role === 'user') url = `${API_BASE}/sales/?username=${user.username}`;
+                if (user.role === 'supplier') url = `${API_BASE}/sales/?supplier_name=${user.username}`;
+
+                const res = await fetch(url, {
+                    headers: { 'admin-name': user.username, 'user-role': user.role }
+                });
+                const orders = await res.json();
+                const container = document.getElementById('ordersList');
+
+                if (orders.length === 0) {
+                    container.innerHTML = `<p style='padding: 20px; color: var(--text-muted);'>No transactions found ${user.role === 'supplier' ? 'for your products' : ''}.</p>`;
+                    return;
+                }
+
+                let html = '<table><thead><tr><th>ID</th><th>' + (user.role === 'supplier' ? 'Buyer' : 'User') + '</th><th>Product</th><th>Qty</th><th>Total</th><th>Method</th><th>Date</th></tr></thead><tbody>';
+                orders.forEach(o => {
+                    html += `<tr>
+                        <td>#${o.sale_id}</td>
+                        <td>${o.username}</td>
+                        <td style="font-weight: 500;">${o.product_name}</td>
+                        <td>${o.quantity}</td>
+                        <td style="font-weight: 600;">₹${(o.total_price || 0).toFixed(2)}</td>
+                        <td><span class="role-badge" style="background: #f1f5f9; color: #475569;">${o.payment_method || 'Cash'}</span></td>
+                        <td style="color: var(--text-muted); font-size: 0.8rem;">${new Date(o.created_at).toLocaleString()}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (err) { container.innerHTML = "Error loading history."; }
+        }
+
+        async function loadAudit() {
+            try {
+                const res = await fetch(`${API_BASE}/sales/audit`, {
+                    headers: { 'admin-name': user.username, 'user-role': user.role }
+                });
+                const logs = await res.json();
+                const container = document.getElementById('auditList');
+
+                let html = '<table><thead><tr><th>Admin</th><th>Action</th><th>Details</th><th>Timestamp</th></tr></thead><tbody>';
+                logs.forEach(l => {
+                    html += `<tr>
+                        <td style="font-weight: 600;">${l.admin_name}</td>
+                        <td><span class="role-badge" style="background: #e0f2fe; color: #0369a1;">${l.action}</span></td>
+                        <td>${l.details}</td>
+                        <td style="color: var(--text-muted);">${new Date(l.created_at).toLocaleString()}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (err) { container.innerHTML = "Error loading audit."; }
+        }
+
+        document.getElementById('supplierListingForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await fetch(`${API_BASE}/products/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'admin-name': user.username, 'user-role': 'supplier' },
+                body: JSON.stringify({
+                    product_name: document.getElementById('s_name').value,
+                    category: document.getElementById('s_category').value,
+                    price: parseFloat(document.getElementById('s_price').value),
+                    stock_quantity: 0
+                })
+            });
+            if (res.ok) { loadSupplierListings(); document.getElementById('supplierListingForm').reset(); }
+        });
+
+        async function deleteProduct(id, isListing = false) {
+            if (!confirm("Are you sure?")) return;
+            const res = await fetch(`${API_BASE}/products/${id}`, {
+                method: 'DELETE',
+                headers: { 'admin-name': user.username }
+            });
+            if (res.ok) { isListing ? loadSupplierListings() : loadProducts(); loadAudit(); }
+        }
+
+        async function updateStock(id) {
+            openModal("Update Stock", `
+                <label style="font-size: 0.8rem; font-weight: 600;">New Stock Level:</label>
+                <input type="number" id="m_newstock" style="width: 100%;" placeholder="Enter number...">
+            `, async () => {
+                const val = document.getElementById('m_newstock').value;
+                if (!val) return;
+                const res = await fetch(`${API_BASE}/products/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'admin-name': user.username },
+                    body: JSON.stringify({ stock_quantity: parseInt(val) })
+                });
+                if (res.ok) { loadProducts(); loadAudit(); }
+            });
+        }
+
+        async function updatePrice(id, currentPrice, isSupplier = false) {
+            openModal("Edit Price", `
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Current Price: ₹${parseFloat(currentPrice).toFixed(2)}</label>
+                <br><br>
+                <label style="font-size: 0.8rem; font-weight: 600;">New Price (₹):</label>
+                <input type="number" id="m_newprice" step="0.01" min="0.01" style="width: 100%; margin-top: 6px;" placeholder="Enter new price...">
+            `, async () => {
+                const val = document.getElementById('m_newprice').value;
+                if (!val || parseFloat(val) <= 0) return;
+                const res = await fetch(`${API_BASE}/products/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'admin-name': user.username },
+                    body: JSON.stringify({ price: parseFloat(val) })
+                });
+                if (res.ok) {
+                    isSupplier ? loadSupplierListings() : loadProducts();
+                    if (user.role === 'admin') loadAudit();
+                } else {
+                    alert('Failed to update price. Please try again.');
+                }
+            });
+        }
+
+        async function buyProduct(id) {
+            const qtyInput = document.getElementById(`qty_${id}`);
+            const qty = parseInt(qtyInput.value);
+
+            const res = await fetch(`${API_BASE}/sales/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product_id: id, quantity: qty, username: user.username })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                openModal("🛍️ Order Confirmed!", `
+                    <div style="text-align: center; padding: 20px 0;">
+                        <div style="font-size: 3rem; margin-bottom: 15px;">✅</div>
+                        <h3 style="margin-bottom: 10px;">Success!</h3>
+                        <p style="color: var(--text-muted);">You successfully purchased <strong>${qty}</strong> units of <strong>${data.product_name}</strong>.</p>
+                        <p style="margin-top: 10px; font-weight: 600;">Total Paid: ₹${data.total_price.toFixed(2)}</p>
+                    </div>
+                `, () => {
+                    loadProducts();
+                    loadOrders();
+                }, false, "Great!"); // Hide cancel, show "Great!"
+                qtyInput.value = 1;
+            } else {
+                const err = await res.json();
+                alert(err.detail);
+            }
+        }
+
+        let trendsChart, categoryChart, productChart;
+        async function loadAnalytics() {
+            const start = document.getElementById('filter_start').value;
+            const end = document.getElementById('filter_end').value;
+            let query = `?dummy=1`;
+            if (start) query += `&start_date=${start}`;
+            if (end) query += `&end_date=${end}`;
+
+            fetch(`${API_BASE}/analytics/summary${query}`).then(r => r.json()).then(data => {
+                document.getElementById('kpi-revenue').innerText = `₹${Math.round(data.total_revenue).toLocaleString()}`;
+                document.getElementById('kpi-orders').innerText = data.total_orders;
+                document.getElementById('kpi-items').innerText = data.total_items;
+                document.getElementById('kpi-avg').innerText = `₹${Math.round(data.avg_order_value).toLocaleString()}`;
+            });
+
+            fetch(`${API_BASE}/analytics/trends`).then(r => r.json()).then(renderTrendsChart);
+            fetch(`${API_BASE}/analytics/categories`).then(r => r.json()).then(renderCategoryChart);
+            fetch(`${API_BASE}/analytics/products`).then(r => r.json()).then(renderProductChart);
+        }
+
+        function renderTrendsChart(data) {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            if (trendsChart) trendsChart.destroy();
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.date),
+                    datasets: [{
+                        label: 'Gross Revenue',
+                        data: data.map(d => d.revenue),
+                        borderColor: '#0d9488',
+                        backgroundColor: 'rgba(13, 148, 136, 0.05)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderCategoryChart(data) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.category),
+                    datasets: [{
+                        data: data.map(d => d.revenue),
+                        backgroundColor: ['#0d9488', '#0f766e', '#14b8a6', '#2dd4bf', '#5eead4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+            });
+        }
+
+        function renderProductChart(data) {
+            const ctx = document.getElementById('productChart').getContext('2d');
+            if (productChart) productChart.destroy();
+            productChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.name),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: data.map(d => d.revenue),
+                        backgroundColor: '#0d9488',
+                        borderRadius: 6
+                    }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function logout() { localStorage.removeItem('psm_user'); window.location.href = 'login.html'; }
+
+        // --- Chatbot UI Logic ---
+        function toggleChat() {
+            const win = document.getElementById('chatWindow');
+            win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+            if (win.style.display === 'flex') {
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessageToUI('user', message);
+            input.value = '';
+
+            // Loading indicator
+            const loadingId = 'loading-' + Date.now();
+            addMessageToUI('ai', 'Thinking...', loadingId);
+
+            try {
+                const res = await fetch(`${API_BASE}/chatbot/query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        username: user.username,
+                        role: user.role
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.response) {
+                    document.getElementById(loadingId).innerText = data.response;
+
+                    // AUTO-SYNC: If the AI confirms a purchase or change, refresh the tables
+                    if (data.response.includes("Confirmed!") || data.response.includes("Successfully")) {
+                        loadProducts();
+                        loadOrders();
+                        if (user.role === 'admin') loadAnalytics();
+                    }
+                } else {
+                    document.getElementById(loadingId).innerText = `⚠️ AI Error: ${data.detail || "Unable to get response. Check if Ollama is running."}`;
+                }
+            } catch (err) {
+                document.getElementById(loadingId).innerText = "❌ Connection failed. Ensure the server and Ollama are active.";
+            }
+        }
+
+        function addMessageToUI(sender, text, id = null) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `msg msg-${sender}`;
+            if (id) div.id = id;
+            div.innerText = text;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const welcomeEl = document.getElementById('aiWelcomeMsg');
+            if (welcomeEl && user) {
+                if (user.role === 'admin') {
+                    welcomeEl.innerText = "Hello! I'm your PSM AI Assistant. I can help with sales trends, inventory, and procurement tasks. What's on your mind?";
+                } else if (user.role === 'supplier') {
+                    welcomeEl.innerText = "Hello! I'm your PSM AI Assistant. I can help manage your product listings, track sales, and coordinate orders. What can I do for you today?";
+                } else {
+                    welcomeEl.innerText = "Hello! I'm your PSM AI Assistant. I can help you search the catalog, update your cart, and view order history. What are you looking for?";
+                }
+            }
+        });
+    </script>
+    <!-- Floating Chatbot UI -->
+    <div id="chatBubble" class="chat-bubble" onclick="toggleChat()">🤖</div>
+    <div id="chatWindow" class="chat-window">
+        <div class="chat-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.2rem;">🤖</span>
+                <div>
+                    <div style="font-weight: 600; font-size: 0.9rem;">PSM Pro Assistant</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">Local Llama 3.2 • Online</div>
+                </div>
+            </div>
+            <button onclick="toggleChat()"
+                style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">×</button>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <div id="aiWelcomeMsg" class="msg msg-ai">Loading AI Assistant...</div>
+        </div>
+        <form id="chatForm" class="chat-input-area" onsubmit="event.preventDefault(); sendChatMessage(); return false;">
+            <input type="text" id="chatInput" placeholder="Ask about sales, stock..." style="flex: 1;" autocomplete="off">
+            <button type="submit" class="btn btn-primary" style="padding: 8px 12px;">Send</button>
+        </form>
+    </div>
+</body>
+
+</html>

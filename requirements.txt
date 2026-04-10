@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-multipart
+pydantic
+fpdf
+langchain
+langchain-community
+langchain-ollama
+faiss-cpu
+langgraph
+langchain-core
+langchain-ollama
