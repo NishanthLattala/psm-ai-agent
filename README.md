@@ -33,31 +33,8 @@ PostgreSQL Database
 ---
 
 ## 📁 Project Structure
-psm/
-├── app/                        # Main Application Codebase
-│   ├── routers/                # API Route Handlers
-│   │   ├── analytics.py        # Analytics and store statistics endpoints
-│   │   ├── auth.py             # User authentication, mapping to auth table
-│   │   ├── chatbot.py          # Chatbot interactive endpoints
-│   │   ├── products.py         # CRUD for products inventory
-│   │   ├── reports.py          # Auto-generating reports (e.g., FPDF based)
-│   │   └── sales.py            # Sales operations and history endpoints
-│   ├── services/               # Core business logic & AI orchestration
-│   │   └── agent_service.py    # LangGraph & LangChain agent logic, FAISS integrations
-│   ├── crud.py                 # Core Database interactions (Create, Read, Update, Delete)
-│   ├── database.py             # SQLAlchemy configuration and database connection
-│   ├── models.py               # Database schemas / ORM definitions
-│   └── schemas.py              # Pydantic schemas for data validation
-├── impleM/                     # Implementation notes and scratchpad directory (Git-ignored)
-├── __pycache__/                # Python cache
-├── .faiss_index/               # Local vector storage for chatbot RAG operations
-├── .gitignore                  # Definitions for untracked files
-├── add_users.py                # Setup utility to seed user accounts
-├── dashboard.html              # Frontend user interface dashboard
-├── login.html                  # Frontend user login interface
-├── register.html               # Frontend user registration interface
-├── main.py                     # Entry point for backend server
-└── requirements.txt            # Project dependencies
+<img width="784" height="630" alt="image" src="https://github.com/user-attachments/assets/8358cee5-e7ca-4910-9915-5e0b5cd1a386" />
+
 
 
 ---
